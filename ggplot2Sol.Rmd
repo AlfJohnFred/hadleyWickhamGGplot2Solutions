@@ -1,0 +1,177 @@
+---
+title: "Solutions to Hadley Wickham's ggplot2: Elegant graphics for Data Analysis 2nd ed."
+author: "Alfred Johnson"
+Date:
+output:
+  html_document:
+    toc: true
+    toc_float: true
+---
+
+#2.2.1 Exercises
+
+```{r}
+library(tidyverse)
+```
+1. List five functions that you could use to get more information about the
+mpg dataset.
+```{r}
+#description of the dataset.
+str(mpg)
+```
+```{r}
+#check the first n rows of data from the dataset.
+head(mpg,6)
+```
+
+```{r}
+#check last n rows of the dataset.
+tail(mpg,6)
+```
+
+```{r}
+#check the dimensions of the dataframe.
+dim(mpg)
+```
+
+```{r}
+#get summary stats from the dataset.
+summary(mpg)
+```
+
+2.How can you find out what other datasets are included with ggplot2?
+```{r}
+#syntax holds true to get datasets available in any package.
+data(package = "ggplot2")
+```
+
+3.Apart from the US, most countries use fuel consumption (fuel consumed
+over fixed distance) rather than fuel economy (distance travelled with fixed
+amount of fuel). How could you convert cty and hwy into the European
+standard of l/100km?
+
+```{r}
+# 1 mpg = 235.21 l/100km (https://www.unitjuggler.com/convert-fuelconsumption-from-mpg-to-lper100km.html)
+mpg%>%mutate(cty = cty*235.21,hwy = hwy*235.21)
+```
+4. Which manufacturer has the most the models in this dataset? Which model
+has the most variations? Does your answer change if you remove the redundant specification of drive train (e.g. “pathfinder 4wd”, “a4 quattro”)
+from the model name?
+```{r}
+#manufactorer with most models
+mpg%>%count(manufacturer,sort = T)
+```
+
+
+```{r}
+#most models in dataset. Most variations would mean the distinct count of number of times a model is repeated.
+mpg%>%count(model,sort = T)
+```
+```{r}
+#remove the reduntant specs
+mpg%>%mutate(model=str_replace_all(model,c("quattro" = "","2wd" = "","4wd" = "")))
+```
+```{r}
+#Rechecking the max variation in models.
+mpg%>%
+  mutate(model=str_replace_all(model,c("quattro" = "","2wd" = "","4wd" = "")))%>%
+  mutate_if(is.character,trimws)%>%
+  count(model,sort = T)
+
+#it is important to trim when using str_replace as it does not deal with any whitespaces left and count will condsider "a4" and "a4 " as two distinct values.
+
+```
+
+#2.3.1 Exercises
+1. How would you describe the relationship between cty and hwy? Do you
+have any concerns about drawing conclusions from that plot?
+```{r}
+#plot a scatter between cty and hwy.
+ggplot(mpg,aes(cty,hwy)) +
+  geom_point()
+```
+The relationship looks like a linear one. With increaseing values for cty we get greater values for hwy as well.
+
+2. What does ggplot(mpg, aes(model, manufacturer)) + geom_point() show?
+Is it useful? How could you modify the data to make it more informative?
+
+```{r}
+ggplot(mpg,aes(model,manufacturer)) +
+  geom_point()
+```
+
+it would be better if we could rotate the x axis able to make them visible and not overlap.
+
+
+3. Describe the data, aesthetic mappings and layers used for each of the
+  following plots. You’ll need to guess a little because you haven’t seen all
+  the datasets and functions yet, but use your common sense! See if you can
+  predict what the plot will look like before running the code.
+  1: ggplot(mpg, aes(cty, hwy)) + geom_point()
+  2: ggplot(diamonds, aes(carat, price)) + geom_point()
+  3: ggplot(economics, aes(date, unemploy)) + geom_line()
+  4: ggplot(mpg, aes(cty)) + geom_histogram()
+  
+```{r}
+#scatter plot for x=cty and y=hwy
+ggplot(mpg,aes(cty,hwy)) +
+  geom_point()
+```
+  
+```{r}
+#scatter plot using the diamond dataset where x=carat,y=price
+ggplot(diamonds,aes(carat,price)) +
+ geom_point()
+```
+```{r}
+#line plot using the economic dataset.
+ggplot(economics,aes(date,unemploy)) +
+  geom_line()
+```
+```{r}
+#histogram made from the mpg dataset on the cty variable.
+ggplot(mpg,aes(cty)) +
+  geom_histogram()
+```
+
+#2.4.1 Exercises
+
+1. Experiment with the colour, shape and size aesthetics. What happens
+when you map them to continuous values? What about categorical values?
+What happens when you use more than one aesthetic in a plot?
+
+```{r}
+summary(mpg)
+```
+
+we can see variables like cty,hwy,year are some continuous variables and model,trans,drv,class are categorical.
+```{r}
+#using a continuous variable you can see that the scale becomes non-discrete.Adding multiple values in aes will give us more than one aesthetic liek color as well as size in the below plot.
+ggplot(mpg,aes(displ,hwy,color = year,size = cyl)) +
+  geom_point()
+```
+
+2. What happens if you map a continuous variable to shape? Why? What
+happens if you map trans to shape? Why?
+```{r}
+ggplot(mpg,aes(displ,hwy,shape = trans)) +
+  geom_point()
+```
+The shape aesthetic cannot accept more than 6 discrete values. Any more than 6 are not displayed and the points are removed from the scatter plot. No continuous variable is accepted by the shape parameter.
+
+3.How is drive train related to fuel economy? How is drive train related to
+engine size and class?
+```{r}
+#drive train with engine displacement and added color using class.
+ggplot(mpg,aes(drv,displ,color = class)) +
+  geom_point()
+```
+```{r}
+#drive train with fuel economy
+ggplot(mpg,aes(drv,hwy,color = class)) +
+  geom_point()
+```
+
+#2.5.1
+
+
